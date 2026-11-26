@@ -1,3 +1,20 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+// Carrega backend/.env sem depender de --env-file (funciona em qualquer Node 18+)
+const arquivoEnv = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../.env');
+if (fs.existsSync(arquivoEnv)) {
+  for (const linha of fs.readFileSync(arquivoEnv, 'utf8').split(/\r?\n/)) {
+    const m = linha.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/);
+    if (!m || linha.trim().startsWith('#')) continue;
+    const valor = m[2].replace(/^(['"])(.*)\1$/, '$2');
+    if (process.env[m[1]] === undefined) process.env[m[1]] = valor;
+  }
+} else {
+  console.error(`\n[EpiLog] Arquivo não encontrado: ${arquivoEnv}`);
+}
+
 const obrigatorias = [
   'SUPABASE_URL',
   'SUPABASE_ANON_KEY',
